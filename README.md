@@ -59,5 +59,9 @@ Hệ thống sẽ tự động khởi động và mở trình duyệt với 2 đ
 
 ## 👨‍💻 Tác Giả
 
+- **Nhóm Thực Hiện**:
+  - Trưởng nhóm: Mai Danh Đức
+  - Thành viên: Đoàn Long An
+  - Thành viên: Phạm Đức Việt
 - **Đề tài**: 08 - Gửi CV an toàn có kiểm tra IP.
 - **Môn học**: An Toàn Bảo Mật.
