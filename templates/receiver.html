@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tuyển Dụng - Nhận CV | Đề Tài 8</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e17; color: #e5e7eb; min-height: 100vh;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(124, 58, 237, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px; z-index: 0;
+        }
+
+        .container {
+            position: relative; z-index: 1;
+            max-width: 900px; margin: 0 auto; padding: 40px 20px;
+        }
+
+        header { text-align: center; margin-bottom: 36px; }
+        header h1 {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, #7c3aed, #00d4ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        header p { color: #6b7280; font-size: 0.9rem; }
+        .badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3);
+            color: #a78bfa; font-size: 0.75rem; font-weight: 500; margin-top: 12px;
+        }
+
+        /* === STATS === */
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card {
+            background: rgba(17, 24, 39, 0.8); border: 1px solid rgba(55, 65, 81, 0.5);
+            border-radius: 14px; padding: 20px; text-align: center;
+            backdrop-filter: blur(10px); transition: border-color 0.3s;
+        }
+        .stat-card:hover { border-color: rgba(124, 58, 237, 0.4); }
+        .stat-number { font-size: 2.2rem; font-weight: 700; margin-bottom: 4px; }
+        .stat-number.total { color: #00d4ff; }
+        .stat-number.success { color: #10b981; }
+        .stat-number.errors { color: #ef4444; }
+        .stat-label { font-size: 0.8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* === CARD === */
+        .card {
+            background: rgba(17, 24, 39, 0.8); border: 1px solid rgba(55, 65, 81, 0.5);
+            border-radius: 16px; padding: 24px; margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-size: 0.85rem; font-weight: 600; color: #9ca3af;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* === TABS === */
+        .tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+        .tab {
+            padding: 10px 20px; border-radius: 10px; cursor: pointer;
+            font-size: 0.9rem; font-weight: 500; border: none;
+            background: rgba(31, 41, 55, 0.5); color: #9ca3af;
+            transition: all 0.3s;
+        }
+        .tab:hover { background: rgba(55, 65, 81, 0.5); color: #e5e7eb; }
+        .tab.active {
+            background: rgba(124, 58, 237, 0.2); color: #a78bfa;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* === LOG === */
+        .log-container {
+            max-height: 500px; overflow-y: auto; padding-right: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .log-container::-webkit-scrollbar { width: 6px; }
+        .log-container::-webkit-scrollbar-track { background: transparent; }
+        .log-container::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+
+        .log-step-header {
+            padding: 10px 14px; margin: 12px 0 6px; border-radius: 8px;
+            background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(124,58,237,0.08));
+            border-left: 3px solid #00d4ff; font-size: 0.85rem; font-weight: 700;
+            color: #67e8f9; letter-spacing: 0.5px;
+            opacity: 0; transform: translateY(-8px) scale(0.97);
+            animation: stepHeaderIn 0.5s cubic-bezier(.4,0,.2,1) forwards;
+        }
+        .log-step-header:first-child { margin-top: 0; }
+        .log-step-header.step-done { border-left-color: #10b981; }
+        .log-step-header.step-fail { border-left-color: #ef4444; }
+        @keyframes stepHeaderIn {
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .log-entry {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 6px 12px 6px 24px; border-radius: 6px;
+            margin-bottom: 2px; font-size: 0.82rem;
+            border-left: 1px solid rgba(55,65,81,0.4); margin-left: 6px;
+            opacity: 0; transform: translateX(-12px);
+            animation: logSlideIn 0.35s ease forwards;
+        }
+        .log-entry.latest { background: rgba(0,212,255,0.04); }
+        @keyframes logSlideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .log-entry.info { color: #9ca3af; }
+        .log-entry.success { color: #34d399; }
+        .log-entry.error { color: #f87171; }
+        .log-entry.warning { color: #fbbf24; }
+
+        .log-time {
+            font-size: 0.72rem; color: #4b5563;
+            white-space: nowrap; min-width: 65px;
+        }
+        .log-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            margin-top: 6px; flex-shrink: 0;
+        }
+        .log-entry.info .log-dot { background: #6b7280; }
+        .log-entry.success .log-dot { background: #10b981; }
+        .log-entry.error .log-dot { background: #ef4444; }
+        .log-entry.warning .log-dot { background: #f59e0b; }
+
+        .log-msg { flex: 1; line-height: 1.5; }
+        .log-msg .typing-cursor {
+            display: inline-block; width: 2px; height: 1em;
+            background: #00d4ff; margin-left: 2px;
+            animation: blink 0.6s step-end infinite; vertical-align: text-bottom;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .log-separator {
+            height: 1px; margin: 8px 0;
+            background: linear-gradient(90deg, rgba(0,212,255,0.2), transparent);
+        }
+
+        .log-tag {
+            display: inline-block; padding: 1px 6px; border-radius: 3px;
+            font-size: 0.68rem; font-weight: 600; letter-spacing: 0.5px;
+            margin-right: 6px; vertical-align: middle;
+        }
+        .tag-step { background: rgba(0, 212, 255, 0.15); color: #67e8f9; }
+        .tag-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .tag-fail { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+        .tag-connect { background: rgba(124, 58, 237, 0.15); color: #c4b5fd; }
+        .tag-save { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+        .tag-ack { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+
+        /* === FILES TABLE === */
+        .files-table { width: 100%; border-collapse: collapse; }
+        .files-table th {
+            text-align: left; padding: 10px 12px; font-size: 0.75rem;
+            color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+        }
+        .files-table td {
+            padding: 12px; font-size: 0.85rem;
+            border-bottom: 1px solid rgba(55, 65, 81, 0.2);
+        }
+        .files-table tr:hover td { background: rgba(55, 65, 81, 0.2); }
+        .download-btn {
+            padding: 6px 14px; border-radius: 6px; border: none;
+            background: rgba(0, 212, 255, 0.15); color: #00d4ff;
+            font-size: 0.8rem; cursor: pointer; font-weight: 500;
+            transition: all 0.3s;
+        }
+        .download-btn:hover { background: rgba(0, 212, 255, 0.3); }
+
+        /* === IP WHITELIST === */
+        .ip-form { display: flex; gap: 8px; margin-bottom: 16px; }
+        .ip-form input {
+            flex: 1; padding: 10px 14px; border-radius: 8px;
+            border: 1px solid rgba(55, 65, 81, 0.8);
+            background: rgba(17, 24, 39, 0.6); color: #e5e7eb;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+        }
+        .ip-form input:focus { outline: none; border-color: #7c3aed; }
+        .ip-form button {
+            padding: 10px 20px; border-radius: 8px; border: none;
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: #fff; font-weight: 600; cursor: pointer; white-space: nowrap;
+            transition: all 0.3s;
+        }
+        .ip-form button:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); }
+
+        .ip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ip-tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 14px; border-radius: 20px;
+            background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #a78bfa;
+        }
+        .ip-remove {
+            cursor: pointer; color: #ef4444; font-weight: 700;
+            font-size: 1rem; line-height: 1;
+        }
+        .ip-remove:hover { color: #f87171; }
+
+        /* === BUTTONS === */
+        .btn-sm {
+            padding: 6px 14px; border-radius: 6px; border: none;
+            font-size: 0.8rem; cursor: pointer; font-weight: 500;
+            background: rgba(55, 65, 81, 0.5); color: #9ca3af;
+            transition: all 0.3s;
+        }
+        .btn-sm:hover { background: rgba(55, 65, 81, 0.8); color: #e5e7eb; }
+        .btn-sm.danger:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .empty-state {
+            text-align: center; padding: 40px; color: #4b5563; font-size: 0.9rem;
+        }
+        .empty-icon {
+            width: 48px; height: 48px; border-radius: 12px; margin: 0 auto 12px;
+            background: rgba(55, 65, 81, 0.3); display: flex;
+            align-items: center; justify-content: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: #6b7280;
+        }
+
+        /* === LIVE INDICATOR === */
+        .live-dot {
+            display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            background: #10b981; margin-right: 6px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        @media (max-width: 600px) {
+            .stats { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.5rem; }
+            .tabs { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Hệ Thống Tuyển Dụng</h1>
+        <p>Dashboard Nhận CV An Toàn — Receiver</p>
+        <div class="badge"><span class="live-dot"></span>ĐANG HOẠT ĐỘNG · Port 9999</div>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number total" id="statTotal">0</div>
+            <div class="stat-label">File đã nhận</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number success" id="statSuccess">0</div>
+            <div class="stat-label">Thành công</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number errors" id="statErrors">0</div>
+            <div class="stat-label">Lỗi / Từ chối</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('logs')">Log giao dịch</button>
+        <button class="tab" onclick="switchTab('files')">File đã nhận</button>
+        <button class="tab" onclick="switchTab('whitelist')">IP Whitelist</button>
+    </div>
+
+    <!-- Tab: Logs -->
+    <div class="tab-content active" id="tab-logs">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="live-dot"></span> Transaction Log</div>
+                <button class="btn-sm danger" onclick="clearLogs()">Xóa log</button>
+            </div>
+            <div class="log-container" id="logContainer">
+                <div class="empty-state" id="logEmpty">
+                    <div class="empty-icon">&gt;_</div>
+                    <div>Đang chờ kết nối từ người gửi...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Files -->
+    <div class="tab-content" id="tab-files">
+        <div class="card">
+            <div class="card-title" style="margin-bottom:16px">Danh sách file đã nhận</div>
+            <div id="filesContent">
+                <div class="empty-state">
+                    <div class="empty-icon">[ ]</div>
+                    <div>Chưa có file nào được nhận</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Whitelist -->
+    <div class="tab-content" id="tab-whitelist">
+        <div class="card">
+            <div class="card-title" style="margin-bottom:16px">Quản lý IP Whitelist</div>
+            <p style="font-size:0.85rem; color:#6b7280; margin-bottom:16px;">
+                Chỉ các IP trong danh sách này mới được phép gửi file.
+            </p>
+            <div class="ip-form">
+                <input type="text" id="newIpInput" placeholder="Nhập IP (ví dụ: 192.168.1.100)">
+                <button onclick="addIp()">+ Thêm</button>
+            </div>
+            <div class="ip-list" id="ipList"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let displayedLogCount = 0;
+    let logQueue = [];
+    let isProcessingQueue = false;
+
+    // === Tab switching ===
+    function switchTab(name) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // === Format log message — replace [TAG] with styled span ===
+    function formatLogMsg(msg) {
+        const tagMap = {
+            'STEP 1': 'tag-step', 'STEP 2': 'tag-step', 'STEP 3': 'tag-step', 'STEP 4': 'tag-step',
+            'CONNECT': 'tag-connect', 'CLOSED': 'tag-connect',
+            'PASSED': 'tag-ok', 'VERIFIED': 'tag-ok', 'DECRYPTED': 'tag-ok',
+            'ACK SENT': 'tag-ack', 'SAVED': 'tag-save',
+            'FAIL': 'tag-fail', 'DENIED': 'tag-fail', 'ERROR': 'tag-fail', 'INTEGRITY FAIL': 'tag-fail',
+        };
+
+        return msg.replace(/\[([A-Z0-9 ]+)\]/g, (match, tag) => {
+            const cls = tagMap[tag] || 'tag-step';
+            return `<span class="log-tag ${cls}">${tag}</span>`;
+        });
+    }
+
+    // === Staggered log rendering — adds logs one by one with delay ===
+    function enqueueNewLogs(logs) {
+        const newLogs = logs.slice(displayedLogCount);
+        if (newLogs.length === 0) return;
+        displayedLogCount = logs.length;
+        const emptyEl = document.getElementById('logEmpty');
+        if (emptyEl) emptyEl.remove();
+        logQueue.push(...newLogs);
+        if (!isProcessingQueue) processLogQueue();
+    }
+
+    function isStepHeader(msg) {
+        return /\[STEP \d\]/.test(msg);
+    }
+    function isConnectMsg(msg) {
+        return /\[CONNECT\]/.test(msg);
+    }
+    function isEndMsg(msg) {
+        return /\[CLOSED\]/.test(msg) || /— —/.test(msg);
+    }
+
+    async function typeText(el, html) {
+        const plain = html.replace(/<[^>]*>/g, '');
+        const cursor = document.createElement('span');
+        cursor.className = 'typing-cursor';
+        el.textContent = '';
+        el.appendChild(cursor);
+        for (let i = 0; i < plain.length; i++) {
+            el.insertBefore(document.createTextNode(plain[i]), cursor);
+            if (i % 3 === 0) await sleep(12);
+        }
+        cursor.remove();
+        el.innerHTML = html;
+    }
+
+    async function processLogQueue() {
+        isProcessingQueue = true;
+        const container = document.getElementById('logContainer');
+
+        while (logQueue.length > 0) {
+            const l = logQueue.shift();
+
+            // Remove 'latest' from previous entries
+            container.querySelectorAll('.latest').forEach(e => e.classList.remove('latest'));
+
+            // Add step header for STEP or CONNECT messages
+            if (isStepHeader(l.message) || isConnectMsg(l.message)) {
+                const sep = document.createElement('div');
+                sep.className = 'log-separator';
+                container.appendChild(sep);
+                const hdr = document.createElement('div');
+                hdr.className = 'log-step-header';
+                const stepMatch = l.message.match(/\[STEP (\d)\](.*)/);
+                const connMatch = l.message.match(/\[CONNECT\](.*)/);
+                if (stepMatch) hdr.textContent = `BƯỚC ${stepMatch[1]} ${stepMatch[2].replace(/[-.]/g,'').trim()}`;
+                else if (connMatch) hdr.textContent = `KẾT NỐI MỚI ${connMatch[1].trim()}`;
+                container.appendChild(hdr);
+                container.scrollTop = container.scrollHeight;
+                await sleep(400);
+            }
+
+            // Skip separator lines
+            if (/^— —/.test(l.message)) { await sleep(100); continue; }
+
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${l.level} latest`;
+            const msgEl = document.createElement('div');
+            msgEl.className = 'log-msg';
+            entry.innerHTML = `<div class="log-time">${l.time}</div><div class="log-dot"></div>`;
+            entry.appendChild(msgEl);
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+
+            // Typing effect for important messages, instant for sub-details
+            const formatted = formatLogMsg(l.message);
+            if (l.level === 'success' || l.level === 'error' || isStepHeader(l.message)) {
+                await typeText(msgEl, formatted);
+                await sleep(250);
+            } else {
+                msgEl.innerHTML = formatted;
+                await sleep(150);
+            }
+
+            // Mark step header done/fail
+            if (l.level === 'error') {
+                const hdrs = container.querySelectorAll('.log-step-header');
+                if (hdrs.length) hdrs[hdrs.length-1].classList.add('step-fail');
+            }
+
+            // Pause longer before next step
+            if (logQueue.length > 0 && (isStepHeader(logQueue[0].message) || isConnectMsg(logQueue[0].message) || isEndMsg(l.message))) {
+                const lastHdr = container.querySelectorAll('.log-step-header');
+                if (lastHdr.length) lastHdr[lastHdr.length-1].classList.add('step-done');
+                await sleep(500);
+            }
+        }
+
+        isProcessingQueue = false;
+    }
+
+    // === Polling for updates ===
+    async function fetchLogs() {
+        try {
+            const res = await fetch('/api/logs');
+            const logs = await res.json();
+            if (logs.length > displayedLogCount) {
+                enqueueNewLogs(logs);
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    async function fetchStats() {
+        try {
+            const res = await fetch('/api/stats');
+            const s = await res.json();
+            document.getElementById('statTotal').textContent = s.total;
+            document.getElementById('statSuccess').textContent = s.success;
+            document.getElementById('statErrors').textContent = s.errors;
+        } catch (e) { /* ignore */ }
+    }
+
+    async function fetchFiles() {
+        try {
+            const res = await fetch('/api/files');
+            const files = await res.json();
+            renderFiles(files);
+        } catch (e) { /* ignore */ }
+    }
+
+    async function fetchWhitelist() {
+        try {
+            const res = await fetch('/api/whitelist');
+            const ips = await res.json();
+            renderWhitelist(ips);
+        } catch (e) { /* ignore */ }
+    }
+
+    function renderFiles(files) {
+        const content = document.getElementById('filesContent');
+        if (files.length === 0) {
+            content.innerHTML = `<div class="empty-state"><div class="empty-icon">[ ]</div><div>Chưa có file nào được nhận</div></div>`;
+            return;
+        }
+        content.innerHTML = `
+            <table class="files-table">
+                <thead><tr>
+                    <th>File</th><th>Kích thước</th><th>IP Gửi</th><th>Thời gian</th><th></th>
+                </tr></thead>
+                <tbody>
+                    ${files.map(f => `
+                        <tr>
+                            <td style="font-weight:600;">${f.original_name}</td>
+                            <td>${formatSize(f.size)}</td>
+                            <td><code style="color:#a78bfa;">${f.sender_ip}</code></td>
+                            <td style="color:#6b7280; font-size:0.8rem;">${f.time}</td>
+                            <td><button class="download-btn" onclick="window.open('/download/${f.filename}')">Download</button></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    function renderWhitelist(ips) {
+        const list = document.getElementById('ipList');
+        list.innerHTML = ips.map(ip => `
+            <div class="ip-tag">
+                ${ip}
+                <span class="ip-remove" onclick="removeIp('${ip}')">&times;</span>
+            </div>
+        `).join('');
+    }
+
+    // === Actions ===
+    async function addIp() {
+        const input = document.getElementById('newIpInput');
+        const ip = input.value.trim();
+        if (!ip) return;
+        await fetch('/api/whitelist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ip })
+        });
+        input.value = '';
+        fetchWhitelist();
+    }
+
+    async function removeIp(ip) {
+        await fetch('/api/whitelist', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ip })
+        });
+        fetchWhitelist();
+    }
+
+    async function clearLogs() {
+        await fetch('/api/clear-logs', { method: 'POST' });
+        displayedLogCount = 0;
+        logQueue = [];
+        document.getElementById('logContainer').innerHTML = `
+            <div class="empty-state" id="logEmpty">
+                <div class="empty-icon">&gt;_</div>
+                <div>Đang chờ kết nối từ người gửi...</div>
+            </div>`;
+    }
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // === Auto refresh ===
+    setInterval(() => { fetchLogs(); fetchStats(); fetchFiles(); }, 1000);
+    fetchWhitelist();
+    fetchStats();
+</script>
+</body>
+</html>

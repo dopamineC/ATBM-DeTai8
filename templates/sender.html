@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi CV An Toàn | Đề Tài 8</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e17;
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        /* === BACKGROUND GRID === */
+        body::before {
+            content: '';
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative; z-index: 1;
+            max-width: 720px; margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* === HEADER === */
+        header {
+            text-align: center; margin-bottom: 40px;
+        }
+        header h1 {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        header p {
+            color: #6b7280; font-size: 0.9rem;
+        }
+        .badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3);
+            color: #00d4ff; font-size: 0.75rem; font-weight: 500; margin-top: 12px;
+        }
+
+        /* === CARD === */
+        .card {
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid rgba(55, 65, 81, 0.5);
+            border-radius: 16px; padding: 28px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            transition: border-color 0.3s;
+        }
+        .card:hover { border-color: rgba(0, 212, 255, 0.3); }
+        .card-title {
+            font-size: 0.85rem; font-weight: 600; color: #9ca3af;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+        }
+
+        /* === UPLOAD AREA === */
+        .upload-area {
+            border: 2px dashed rgba(0, 212, 255, 0.3);
+            border-radius: 12px; padding: 50px 20px;
+            text-align: center; cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover, .upload-area.drag-over {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.05);
+        }
+        .upload-area.has-file {
+            border-color: #10b981; background: rgba(16, 185, 129, 0.05);
+        }
+        .upload-icon { font-size: 3rem; margin-bottom: 12px; }
+        .upload-text { color: #9ca3af; font-size: 0.95rem; }
+        .upload-text span { color: #00d4ff; font-weight: 600; }
+        .file-input { display: none; }
+
+        /* === FILE INFO === */
+        .file-info {
+            display: none; margin-top: 16px; padding: 12px 16px;
+            background: rgba(16, 185, 129, 0.1); border-radius: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 0.9rem;
+        }
+        .file-info .name { font-weight: 600; color: #10b981; }
+        .file-info .size { color: #6b7280; margin-left: 12px; }
+        .file-info .remove {
+            float: right; cursor: pointer; color: #ef4444;
+            font-weight: 600; font-size: 1.1rem;
+        }
+
+        /* === CONFIG === */
+        .config-row { display: flex; gap: 12px; }
+        .config-row .field { flex: 1; }
+        .config-row label {
+            display: block; font-size: 0.8rem; color: #6b7280;
+            margin-bottom: 6px; font-weight: 500;
+        }
+        .config-row input {
+            width: 100%; padding: 10px 14px; border-radius: 8px;
+            border: 1px solid rgba(55, 65, 81, 0.8);
+            background: rgba(17, 24, 39, 0.6); color: #e5e7eb;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+            transition: border-color 0.3s;
+        }
+        .config-row input:focus {
+            outline: none; border-color: #00d4ff;
+        }
+
+        /* === SEND BUTTON === */
+        .send-btn {
+            width: 100%; padding: 16px; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            color: #fff; margin-top: 20px;
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .send-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0, 212, 255, 0.3); }
+        .send-btn:disabled {
+            opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;
+        }
+        .send-btn.loading {
+            background: linear-gradient(135deg, #374151, #4b5563);
+        }
+
+        /* === PROTOCOL STEPS === */
+        .steps-container { display: none; }
+        .step {
+            display: flex; align-items: flex-start; gap: 16px;
+            padding: 16px; border-radius: 10px; margin-bottom: 8px;
+            background: rgba(31, 41, 55, 0.5);
+            border-left: 3px solid #374151;
+            opacity: 0.4; transition: all 0.5s;
+        }
+        .step.active { opacity: 1; border-left-color: #00d4ff; background: rgba(0, 212, 255, 0.05); }
+        .step.success { opacity: 1; border-left-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+        .step.error { opacity: 1; border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+
+        .step-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+            background: rgba(55, 65, 81, 0.5);
+            font-family: 'JetBrains Mono', monospace;
+            color: #6b7280; letter-spacing: 0.5px;
+        }
+        .step.active .step-icon { background: rgba(0, 212, 255, 0.15); color: #00d4ff; }
+        .step.success .step-icon { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .step.error .step-icon { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        .step-content { flex: 1; }
+        .step-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+        .step-detail { font-size: 0.8rem; color: #9ca3af; line-height: 1.5; }
+        .step-time {
+            font-size: 0.75rem; color: #00d4ff;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* === SPINNER === */
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-top-color: #00d4ff; border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* === CRYPTO DETAILS === */
+        .crypto-panel { display: none; }
+        .crypto-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(55, 65, 81, 0.3);
+        }
+        .crypto-item:last-child { border-bottom: none; }
+        .crypto-label {
+            font-size: 0.75rem; color: #6b7280;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .crypto-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem; color: #00d4ff;
+            word-break: break-all; line-height: 1.6;
+        }
+
+        /* === RESULT BANNER === */
+        .result-banner {
+            display: none; padding: 20px; border-radius: 12px;
+            text-align: center; font-weight: 600; font-size: 1.1rem;
+            margin-top: 20px;
+        }
+        .result-banner.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981;
+        }
+        .result-banner.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.5rem; }
+            .config-row { flex-direction: column; }
+        }
+
+        /* === GLOW ANIMATION === */
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(0,212,255,0.2); }
+            50% { box-shadow: 0 0 20px rgba(0,212,255,0.4); }
+        }
+        .step.active { animation: glow 1.5s ease-in-out infinite; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Gửi CV An Toàn</h1>
+        <p>Hệ thống truyền file bảo mật với kiểm tra IP</p>
+        <div class="badge">AES-CBC · RSA 1024-bit OAEP · SHA-512</div>
+    </header>
+
+    <!-- Upload Area -->
+    <div class="card">
+        <div class="card-title">Chọn file CV</div>
+        <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon" style="font-size:2.5rem; color:#374151;">&#9650;</div>
+            <div class="upload-text">Kéo thả file PDF vào đây<br>hoặc <span>click để chọn file</span></div>
+        </div>
+        <input type="file" id="fileInput" class="file-input" accept=".pdf,.doc,.docx,.txt">
+        <div class="file-info" id="fileInfo">
+            <span class="remove" onclick="removeFile()">&times;</span>
+            <span class="name" id="fileName"></span>
+            <span class="size" id="fileSize"></span>
+        </div>
+    </div>
+
+    <!-- Server Config -->
+    <div class="card">
+        <div class="card-title">Cấu hình server</div>
+        <div class="config-row">
+            <div class="field">
+                <label>Server IP (Receiver)</label>
+                <input type="text" id="serverIp" value="127.0.0.1">
+            </div>
+            <div class="field">
+                <label>Port</label>
+                <input type="text" id="serverPort" value="9999">
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Button -->
+    <button class="send-btn" id="sendBtn" onclick="sendFile()" disabled>
+        Gửi An Toàn
+    </button>
+
+    <!-- Protocol Steps -->
+    <div class="steps-container" id="stepsContainer">
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-title">Quá trình truyền file</div>
+            <div class="step" id="step1">
+                <div class="step-icon">01</div>
+                <div class="step-content">
+                    <div class="step-name">Bước 1: Handshake</div>
+                    <div class="step-detail" id="step1Detail">Gửi "Hello!" + IP, kiểm tra whitelist</div>
+                </div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-icon">02</div>
+                <div class="step-content">
+                    <div class="step-name">Bước 2: Xác thực & Trao khóa</div>
+                    <div class="step-detail" id="step2Detail">RSA key exchange, ký metadata</div>
+                </div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-icon">03</div>
+                <div class="step-content">
+                    <div class="step-name">Bước 3: Mã hóa & Gửi</div>
+                    <div class="step-detail" id="step3Detail">AES-CBC encrypt, SHA-512 hash, RSA sign</div>
+                </div>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-icon">04</div>
+                <div class="step-content">
+                    <div class="step-name">Bước 4: Xác nhận (ACK/NACK)</div>
+                    <div class="step-detail" id="step4Detail">Chờ phản hồi từ server...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Banner -->
+    <div class="result-banner" id="resultBanner"></div>
+
+    <!-- Crypto Details -->
+    <div class="crypto-panel" id="cryptoPanel">
+        <div class="card">
+            <div class="card-title">Chi tiết mã hóa</div>
+            <div id="cryptoContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedFile = null;
+
+    // === Drag & Drop ===
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault(); dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+
+    function handleFile(file) {
+        selectedFile = file;
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatSize(file.size);
+        document.getElementById('fileInfo').style.display = 'block';
+        dropZone.classList.add('has-file');
+        document.getElementById('sendBtn').disabled = false;
+    }
+
+    function removeFile() {
+        selectedFile = null;
+        document.getElementById('fileInfo').style.display = 'none';
+        dropZone.classList.remove('has-file');
+        document.getElementById('sendBtn').disabled = true;
+        fileInput.value = '';
+    }
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    // === Send File ===
+    async function sendFile() {
+        if (!selectedFile) return;
+
+        const btn = document.getElementById('sendBtn');
+        btn.disabled = true;
+        btn.textContent = 'Đang xử lý...';
+        btn.classList.add('loading');
+
+        // Hiển thị steps
+        const stepsContainer = document.getElementById('stepsContainer');
+        stepsContainer.style.display = 'block';
+
+        // Reset tất cả steps
+        for (let i = 1; i <= 4; i++) {
+            const step = document.getElementById('step' + i);
+            step.className = 'step';
+        }
+
+        // Animate step 1 active
+        document.getElementById('step1').classList.add('active');
+
+        // Hide previous results
+        document.getElementById('resultBanner').style.display = 'none';
+        document.getElementById('cryptoPanel').style.display = 'none';
+
+        // Build form data
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('server_ip', document.getElementById('serverIp').value);
+        formData.append('server_port', document.getElementById('serverPort').value);
+
+        try {
+            const response = await fetch('/send', { method: 'POST', body: formData });
+            const data = await response.json();
+
+            // Animate through steps
+            await animateSteps(data.steps);
+
+            // Show result
+            const banner = document.getElementById('resultBanner');
+            if (data.success) {
+                banner.className = 'result-banner success';
+                banner.innerHTML = 'Gửi thành công — ' + data.message;
+            } else {
+                banner.className = 'result-banner error';
+                banner.innerHTML = 'Gửi thất bại — ' + (data.error || 'Gửi thất bại');
+            }
+            banner.style.display = 'block';
+
+            // Show crypto details
+            if (data.crypto) showCryptoDetails(data.crypto);
+
+        } catch (err) {
+            const banner = document.getElementById('resultBanner');
+            banner.className = 'result-banner error';
+            banner.innerHTML = 'Lỗi kết nối: ' + err.message;
+            banner.style.display = 'block';
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Gửi An Toàn';
+        btn.classList.remove('loading');
+    }
+
+    async function animateSteps(steps) {
+        for (const s of steps) {
+            const stepEl = document.getElementById('step' + s.step);
+            if (!stepEl) continue;
+
+            // Make active first
+            stepEl.className = 'step active';
+            await sleep(400);
+
+            // Update detail
+            const detailEl = stepEl.querySelector('.step-detail');
+            detailEl.innerHTML = s.details;
+            if (s.time_ms !== undefined) {
+                detailEl.innerHTML += ' <span class="step-time">(' + s.time_ms + 'ms)</span>';
+            }
+
+            // Set final status
+            stepEl.className = 'step ' + s.status;
+            await sleep(300);
+
+            // Activate next step
+            const nextStep = document.getElementById('step' + (s.step + 1));
+            if (nextStep && s.status === 'success') {
+                nextStep.classList.add('active');
+            }
+        }
+    }
+
+    function showCryptoDetails(crypto) {
+        const panel = document.getElementById('cryptoPanel');
+        const content = document.getElementById('cryptoContent');
+
+        const items = [
+            { label: 'Thuật toán mã hóa', value: crypto.algorithm || 'AES-CBC' },
+            { label: 'RSA Key Size', value: crypto.rsa_key_size || '1024-bit' },
+            { label: 'IV (Base64)', value: crypto.iv || '-' },
+            { label: 'SHA-512 Hash', value: crypto.hash || '-' },
+            { label: 'Chữ ký (trích)', value: crypto.signature || '-' },
+            { label: 'Session Key (trích)', value: crypto.session_key || '-' },
+            { label: 'Kích thước gốc', value: (crypto.original_size || 0) + ' bytes' },
+            { label: 'Kích thước mã hóa', value: (crypto.encrypted_size || 0) + ' bytes' },
+        ];
+
+        content.innerHTML = items.map(item => `
+            <div class="crypto-item">
+                <div class="crypto-label">${item.label}</div>
+                <div class="crypto-value">${item.value}</div>
+            </div>
+        `).join('');
+
+        panel.style.display = 'block';
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
