@@ -29,7 +29,7 @@ Dự án bao gồm 2 thành phần chính:
 ### Hướng Dẫn Cài Đặt
 1. Clone dự án về máy:
    ```bash
-   git clone https://github.com/your-username/your-repo-name.git
+   git clone https://github.com/dopamineC/ATBM-DeTai8.git
    cd ATBM
    ```
 2. Cài đặt các thư viện cần thiết:
